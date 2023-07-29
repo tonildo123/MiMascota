@@ -9,10 +9,41 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Drawer } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 import { unlogger } from '../state/LoginSlice';
-
+import { Enviroment } from '../enviroment';
+import axios from 'axios';
+import { profileSuccess } from '../state/Profileslice';
+import firestore from '@react-native-firebase/firestore';
 
 
 const CustomDrawerAppStack = (props) => {
+
+  const state = useSelector(state => state)
+
+  const [datos, setDatos] = useState({
+    name: 'Sin datos',
+    lastName: 'Sin datos',
+    avatar: '../assets/images/avatar.png'
+  })
+
+  const [data, setData] = useState()
+
+  useEffect(() => {
+
+    getFirebase()
+
+
+  }, [])
+
+  useEffect(() => {
+
+    state.profileuser.profile.status ? setDatos({
+      name: state.profileuser.profile.name,
+      lastName: state.profileuser.profile.lastName,
+      avatar: state.profileuser.profile.avatar,
+    }) : null
+
+  }, [state.profileuser.profile.status])
+
 
   const distpach = useDispatch();
 
@@ -29,57 +60,56 @@ const CustomDrawerAppStack = (props) => {
   const handleNestedPet = () => { setNestedPet(!NestedPet) }
   const handleNestedOwn = () => { setNestedOwn(!NestedOwn) }
 
-  const handleExit = ()=>{
+  const handleExit = () => {
     distpach(unlogger())
   }
+
+
+  const getFirebase = async ()=>{
+
+   
+  const suscriber = firestore()
+    .collection('ProfileUsers')
+    .where('idUser', '==', state.logger.user.id)
+    .onSnapshot(querySnapshot => {
+      const objeto = [];      
+      querySnapshot.forEach(documentSnapshot => {
+        objeto.push({
+          ...documentSnapshot.data(),
+          key: documentSnapshot.id
+        });
+      });
+      setData(objeto);
+      setDatos({
+        ...datos,
+        name:objeto[0].name,
+        lastName:objeto[0].lastName,
+        avatar:objeto[0].avatar,
+
+      })
+      console.log('data::::> ', JSON.stringify(objeto, null, 5));
+    });
+
+  return () => suscriber();
+  
+  }
+
 
   return (
     <View style={{ flex: 1, }} >
       <DrawerContentScrollView
         {...props}
-        contentContainerStyle={{
-          backgroundColor: '#BA4A00',
-
-        }}
-      >
+        contentContainerStyle={{ backgroundColor: '#BA4A00' }}>
         <ImageBackground
           source={require(url)}
           style={{ padding: 30, }}>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'column'
-            }}
-          >
-            <View
-              style={{
-                width: '100%',
-                height: '40%',
-
-              }}
-            ></View>
-            <View
-              style={{
-                width: '100%',
-                height: '10%'
-              }}
-            ></View>
-            <View
-              style={{
-                width: '100%',
-                height: '50%',
-                flexDirection: 'row'
-              }}
-            >
-              <View
-                style={{
-                  width: '50%',
-                  height: '100%'
-                }}
-              >
+          <View style={{ flex: 1, flexDirection: 'column' }}>
+            {/* <View style={{ width: '100%', height: '40%' }}></View> */}
+            <View style={{ width: '100%', height: '10%' }}></View>
+            <View style={{ width: '100%', height: '50%', flexDirection: 'row' }}>
+              <View style={{width: '50%',height: '100%'}}>
                 <Image
-                  source={require('../assets/images/avatar.png')}
-                  // source={{ uri: currentUser.user.foto }}
+                  source={{ uri: datos.avatar }}
                   style={{
                     height: 90,
                     width: 90,
@@ -89,25 +119,20 @@ const CustomDrawerAppStack = (props) => {
                   }}
                 />
               </View>
-              <View
-                style={{
-                  width: '50%',
-                  height: '100%'
-                }}
-              >
+              <View style={{width: '50%',height: '100%'}}>
                 <Text
                   style={{
                     color: '#fff',
-                    fontSize: 20,
-                    fontFamily: 'Roboto-Medium'
+                    fontSize: 22,
+                    fontFamily: 'Roboto-Medium',
+                    fontWeight: 'bold',
+                    alignSelf:'flex-end'
                   }}>
-                  Carlos Diaz
+                  {datos.name} {datos.lastName}
                 </Text>
               </View>
             </View>
           </View>
-
-
         </ImageBackground>
         <View
           style={{
@@ -117,50 +142,52 @@ const CustomDrawerAppStack = (props) => {
           }}>
           <Drawer.Section>
             <DrawerItem
-              label='INICIO'
+              label='Inicio'
+              labelStyle={{ color: '#873600' }}
               focused={focus == 1 ? true : false}
               onPress={handleNestedHome}
               icon={() => (
                 <FontAwesome
                   name="home"
-                  color='#0E6251'
+                  color='#873600'
                   size={20}
                 />
-              )}/>
-              {
+              )} />
+            {
               NestedHome == true &&
               <DrawerItem
                 label='Mi perfil'
                 icon={() => (
                   <FontAwesome
                     name="check-square-o"
-                    color='#28B463'
+                    color='#D35400'
                     size={20}
-
+                    marginLeft={15}
                   />
                 )}
-                labelStyle={{ color: '#28B463' }}
+                labelStyle={{ color: '#D35400' }}
                 onPress={
-                  () => { 
-                    props.navigation.navigate('Profile') 
+                  () => {
+                    props.navigation.navigate('Profile')
                     // Alert.alert('Funcionalidad en desarrollo')
                   }}
               />
             }
-            
+
           </Drawer.Section>
           <Drawer.Section>
             <DrawerItem
               label='Mi Mascota'
+              labelStyle={{ color: '#873600' }}
               focused={focus == 1 ? true : false}
               onPress={handleNestedPet}
               icon={() => (
                 <MaterialIcons
-                name="pets"
-                color='#28B463'
-                size={20}
-            />
-              )}/>
+                  name="pets"
+                  color='#873600'
+                  size={20}
+                />
+              )} />
             {
               NestedPet == true &&
               <DrawerItem
@@ -168,14 +195,14 @@ const CustomDrawerAppStack = (props) => {
                 icon={() => (
                   <FontAwesome
                     name="plus"
-                    color='#28B463'
+                    color='#D35400'
                     size={20}
                   />
                 )}
-                labelStyle={{ color: '#28B463' }}
+                labelStyle={{ color: '#D35400' }}
                 onPress={
-                  () => { 
-                    props.navigation.navigate('Pet') 
+                  () => {
+                    props.navigation.navigate('Pet')
                     // Alert.alert('Funcionalidad en desarrollo')
                   }}
               />
@@ -187,13 +214,13 @@ const CustomDrawerAppStack = (props) => {
                 icon={() => (
                   <MaterialIcons
                     name="history-edu"
-                    color='#28B463'
+                    color='#D35400'
                     size={20}
                   />
                 )}
-                labelStyle={{ color: '#28B463' }}
+                labelStyle={{ color: '#D35400' }}
                 onPress={
-                  () => { 
+                  () => {
                     // props.navigation.navigate('Club') 
                     Alert.alert('Funcionalidad en desarrollo')
                   }}
@@ -206,13 +233,13 @@ const CustomDrawerAppStack = (props) => {
                 icon={() => (
                   <MaterialCommunityIcons
                     name="home-map-marker"
-                    color='#28B463'
+                    color='#D35400'
                     size={20}
                   />
                 )}
-                labelStyle={{ color: '#28B463' }}
+                labelStyle={{ color: '#D35400' }}
                 onPress={
-                  () => { 
+                  () => {
                     // props.navigation.navigate('Club') 
                     Alert.alert('Funcionalidad en desarrollo')
                   }}
@@ -220,32 +247,33 @@ const CustomDrawerAppStack = (props) => {
             }
           </Drawer.Section>
           <Drawer.Section>
-          <DrawerItem
+            <DrawerItem
               label='Mis pertenencias'
+              labelStyle={{ color: '#873600' }}
               focused={focus == 1 ? true : false}
               onPress={handleNestedOwn}
               icon={() => (
                 <MaterialIcons
-                name="privacy-tip"
-                color='#28B463'
-                size={20}
-            />
-              )}/>
-              {
+                  name="privacy-tip"
+                  color='#873600'
+                  size={20}
+                />
+              )} />
+            {
               NestedOwn == true &&
               <DrawerItem
                 label='Mi vehiculo'
                 icon={() => (
                   <Fontisto
                     name="car"
-                    color='#28B463'
+                    color='#D35400'
                     size={20}
                   />
                 )}
-                labelStyle={{ color: '#28B463' }}
+                labelStyle={{ color: '#D35400' }}
                 onPress={
-                  () => { 
-                    props.navigation.navigate('Own') 
+                  () => {
+                    props.navigation.navigate('Own')
                     // Alert.alert('Funcionalidad en desarrollo')
                   }}
               />
@@ -257,13 +285,13 @@ const CustomDrawerAppStack = (props) => {
                 icon={() => (
                   <MaterialIcons
                     name="motorcycle"
-                    color='#28B463'
+                    color='#D35400'
                     size={20}
                   />
                 )}
-                labelStyle={{ color: '#28B463' }}
+                labelStyle={{ color: '#D35400' }}
                 onPress={
-                  () => { 
+                  () => {
                     // props.navigation.navigate('Club') 
                     Alert.alert('Funcionalidad en desarrollo')
                   }}
@@ -276,13 +304,13 @@ const CustomDrawerAppStack = (props) => {
                 icon={() => (
                   <MaterialCommunityIcons
                     name="bicycle"
-                    color='#28B463'
+                    color='#D35400'
                     size={20}
                   />
                 )}
-                labelStyle={{ color: '#28B463' }}
+                labelStyle={{ color: '#D35400' }}
                 onPress={
-                  () => { 
+                  () => {
                     // props.navigation.navigate('Club') 
                     Alert.alert('Funcionalidad en desarrollo')
                   }}
@@ -293,37 +321,37 @@ const CustomDrawerAppStack = (props) => {
       </DrawerContentScrollView>
 
       <View
-            style={{
-                padding:10,
-                borderTopWidth:2,
-                borderTopColor:'black',
-            }}
+        style={{
+          padding: 10,
+          borderTopWidth: 2,
+          borderTopColor: 'black',
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            handleExit();
+            console.log('exit')
+          }}
+          style={{
+            paddingVertical: 5
+          }}
         >
-            <TouchableOpacity
-                onPress={()=>{
-                    handleExit();
-                    console.log('exit')
-                }}
-                style={{
-                    paddingVertical:5
-                }}
-            >
-            <View
-                    style={{
-                        flexDirection:'row',
-                        alignItems:'center',
-                        
-                    }}
-                >
-                <FontAwesome
-                        name="power-off"
-                        color='black'
-                        size={20}
-                    />       
-                <Text style={{paddingHorizontal:20, color:'black'}}>Salir</Text>
-                </View>
-            </TouchableOpacity>            
-        </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+
+            }}
+          >
+            <FontAwesome
+              name="power-off"
+              color='black'
+              size={20}
+            />
+            <Text style={{ paddingHorizontal: 20, color: 'black' }}>Salir</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }

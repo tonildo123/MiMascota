@@ -13,19 +13,19 @@ import LinearGradient from 'react-native-linear-gradient';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-// import { LoginScreenStyle } from '../../styles/loginStyle/LoginScreenStyle';
 import NetInfo from "@react-native-community/netinfo";
 import axios from 'axios';
 import { LoginScreenStyle } from './style';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 
-const RegisterScreen = () => {
+
+const RegisterScreen = ({ navigation }) => {
 
   const [text, onChangeText] = useState("");
   const [number, onChangeNumber] = useState('');
   const [number2, onChangeNumber2] = useState('');
-  // const [validateUser, setValidateUser] = useState(false)
-  // const [validatePassword, setValidatePassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
@@ -55,29 +55,54 @@ const RegisterScreen = () => {
 
     console.log('body',JSON.stringify(body, null, 4))
     
-        axios.post('https://be-production-3d6c.up.railway.app/api/create', body)
-        .then((resp)=>{
-          console.log('datos', JSON.stringify(resp.data.data, null, 4))
-          setLoadingData(false)
-          Alert.alert('Usuario registrado')
-          
-        })
-        .catch(
-        (err)=>{
-            console.log('error en la solicitud',err)  
-            setLoadingData(false)
-            Alert.alert('Error al registrar usuario')
-        }
-        )
+    auth()
+      .createUserWithEmailAndPassword(text, number)
+      .then(resp => {
+        console.log('resp : ', JSON.stringify(resp.user.uid, null, 3));
+        console.log('User account created & signed in!');
+        const idUser = resp.user.uid;
+        cargarDataUser(idUser);
+      })
+      .catch(error => {
+        console.error(error);
+        setLoadingData(false)
+        Alert.alert(`${error}`)
+      });   
 
-    }else{
-      
-        Alert.alert('Las contraseñas no coinciden')
-    }
+}}
 
+const cargarDataUser = async(idUserId)=>{
 
+    const idUser = idUserId;
+    const email = text;
+    const password = number;
     
 
+try {
+  firestore().collection('Users').add({
+    idUser:idUser,
+    email:email, 
+    password:password
+  })
+} catch (error) {
+  console.log('error al subir datos', error)
+  setLoadingData(false)
+  Alert.alert('Hubo un error al guardar datos')
+}finally{
+  setLoadingData(false)
+  Alert.alert(
+    "Exito!",
+    "Datos guardados correctamente!",
+    [
+      {
+        text: "Cancel",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel"
+      },
+      { text: "OK", onPress: () => navigation.navigate('Login')}
+    ]
+  );
+}
 }
   return (
     <View style={LoginScreenStyle.container}>

@@ -12,13 +12,13 @@ const HeaderComponent = () => {
     
     return (
         <Appbar.Header
-            style={{ backgroundColor: '#FAD7A0', alignSelf: 'center' }}>
+            style={{ backgroundColor: 'white', alignSelf: 'center' }}>
             <View style={{ marginRight: 15, flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{ marginLeft: 0 }}>
                     <MaterialCommunityIcons
                         name="forwardburger"
                         color={'#873600'}
-                        size={24}
+                        size={26}
                         onPress={() => navigation.openDrawer()}
                     />
                 </View>

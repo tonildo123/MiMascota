@@ -1,34 +1,49 @@
 
-import React, { useState } from 'react'
-import { Button, TextInput, View, Image,StyleSheet, PermissionsAndroid} from 'react-native';
+import React, { useState, useEffect } from 'react'
+import { Button, TextInput, View, Image,StyleSheet, PermissionsAndroid, Alert} from 'react-native';
 import { Formik } from 'formik';
 import { useSelector } from 'react-redux';
 import HeaderComponent from '../../components/HeaderComponent'
 import   {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import Image200X200 from '../../components/Imgen';
+import firestore from '@react-native-firebase/firestore';
+
 
 const ProfileScreen = () => {
 
   const initValues = { name:'', lastName:'', numberPhone:''}
   let state = useSelector((state) => state)  
   
-  const [fotobase64, setFotobase64] = useState('https://via.placeholder.com/200');
+  const [fotobase64, setFotobase64] = useState();
   const [mensaje, setmensaje] = useState()
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (values) => {
 
-    const body = {
-     idUser:state.logger.user.id,
-     name:values.name,
-     lastName:values.lastName,
-     numberPhone:values.numberPhone,
-     avatar:fotobase64
-    }
+  useEffect(() => {
+    console.log('profile : ',JSON.stringify(state, null, 5))
+    mensaje == undefined ? null : Alert.alert(`${mensaje}`)
+  }, [])
+  
 
-    console.log('body : ', JSON.stringify(body, null, 5))   
+  const handleSubmit =  async (values) => {
+    
+    try {
+      firestore().collection('ProfileUsers').add({
+        idUser:state.logger.user.id,
+        name:values.name,
+        lastName:values.lastName,
+        avatar :fotobase64,
+        numberPhone:values.numberPhone,
+      })
+    } catch (error) {
+      console.log(error)
+      Alert.alert('ocurrio un error')
+    }finally{
+      Alert.alert('cargado correctamente!')
+      
+    }    
 
 }
-
-
  
   
 const handleFoto = async () => {
@@ -75,9 +90,35 @@ const handleFoto = async () => {
     setmensaje('error inesperado');
   }
 };
-const handleChoosePhoto = ()=>{
-  console.log('seleccionar foto') 
-}
+// selecciona una imagen
+const handleImagen = () =>{
+
+  const options = {
+    title:'Seleccione una imagen',
+    storageOption:{
+      skipBackup:true,
+      path:'images',
+    },
+  };
+
+  launchImageLibrary(options, response =>{
+    console.log('response = ' + response);
+
+      if(response.errorCode){
+        console.log('response error= '+response.errorCode);
+      }else if(response.didCancel){
+        console.log('user cancel action ');
+      }else{
+        const path = response.assets[0].uri;
+        setFotobase64(path);
+        
+      }
+
+  });
+
+
+};
+
   return (
     <View style={{flex:1}}>
       <HeaderComponent />
@@ -88,43 +129,53 @@ const handleChoosePhoto = ()=>{
       >
      {({ handleChange, handleBlur, handleSubmit, values }) => (
        <View>
-        <Image
-            source={require('../../assets/images/avatar.png')}
-            style={{
-            height: 90,
-            width: 90,
-            resizeMode: 'cover',
-            borderRadius: 40,
-            marginBottom: 10,
-            marginTop:10,
-            alignSelf:'center'
-            }}
-          />
-          <View style={{flexDirection:'row' ,justifyContent:'space-evenly'
+
+        {
+          fotobase64 === undefined ? <Image200X200/> : 
+          <Image
+                source={{
+                  uri: fotobase64,
+                }}
+                style={{
+                  height: 200,
+                  width: 200,
+                  resizeMode: 'cover',
+                  alignSelf: 'center'
+                }}
+              />
+        }
+        
+          <View style={{flexDirection:'row' ,justifyContent:'space-evenly', marginTop:8
           }}>
-          <Button onPress={handleFoto} title='Tomar foto' />
-          <Button onPress={handleChoosePhoto} title='Elegir foto' />
+          <Button onPress={handleFoto} title='Tomar foto' color={'#873600'}/>
+          <Button onPress={handleImagen} title='Elegir foto' color={'#873600'} />
           </View>
           
          <TextInput
            onChangeText={handleChange('name')}
            placeholder='ingrese su nombre'
+           placeholderTextColor={'#566573'}
            onBlur={handleBlur('name')}
            value={values.name}
+           color={'black'}
          />
           <TextInput
            onChangeText={handleChange('lastName')}
            placeholder='ingresar su apellido'
+           placeholderTextColor={'#566573'}
            onBlur={handleBlur('lastName')}
            value={values.lastName}
+           color={'black'}
          />
           <TextInput
            onChangeText={handleChange('numberPhone')}
            placeholder='ingrese numero telefonico'
+           placeholderTextColor={'#566573'}
            onBlur={handleBlur('numberPhone')}
            value={values.numberPhone}
+           color={'black'}
          />          
-          <Button onPress={handleSubmit} title='Guardar cambios' />
+          <Button onPress={handleSubmit} title='Guardar cambios' color={'#873600'}/>
        </View>
      )}
    </Formik>

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "256392957605",
+    "project_id": "mi-mascota-a3b05",
+    "storage_bucket": "mi-mascota-a3b05.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256392957605:android:5cfa4166f3fb8e4830874c",
+        "android_client_info": {
+          "package_name": "com.mimascota"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "256392957605-m2ul56cc3n4nvlv0ef7pon2pv5bmo9fs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mimascota",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "256392957605-e0fu4a85vikupfppb0nj5a15nt8lpk0p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABDggLbGI1cpYJruXzDPLDDZuLLQWgjVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "256392957605-e0fu4a85vikupfppb0nj5a15nt8lpk0p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

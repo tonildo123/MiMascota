@@ -17,12 +17,17 @@ import { LoginScreenStyle } from './style';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { loggearme } from '../../state/LoginSlice';
+import { Enviroment } from '../../enviroment';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
 
 
 const LoginScreen = ({ navigation }) => {  
     
     const distpach = useDispatch()
 
+    
     const [text, onChangeText] = useState("");
     const [number, onChangeNumber] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -32,37 +37,38 @@ const LoginScreen = ({ navigation }) => {
 
     const handleLogin = () => {
 
-        setLoadingData(true)
+        setLoadingData(true)      
 
-        const body = {
-            email: text,
-            password: number
-        }
         
-
-        axios.post('https://be-production-3d6c.up.railway.app/api/login', body)
-            .then((resp) => {
-                console.log('respuesta', JSON.stringify(resp.data.data, null, 4))
-
-                setLoadingData(false)
-                let obj  = {
-                    email: text,
-                    password: number,
-                    id: resp.data.data._id                    
-                }   
-
-                distpach(loggearme(obj))
-                console.log('datos ...>', JSON.stringify(resp.data.data, null, 4))
-                
-            })
-            .catch(
-                (err) => {
-                    console.log('error en la solicitud', err)
-                    setLoadingData(false)
-                    Alert.alert('error en el login')
-                }
-            )
-
+        auth()
+        .signInWithEmailAndPassword(text, number)
+        .then((resp) => {
+          console.log('Log in ', JSON.stringify(resp, null, 3));
+          console.log('id user ', resp.user.uid);
+          const id = resp.user.uid
+          const user = {
+            id:id,
+            email: text, 
+            password: number,
+          }
+          setLoadingData(false)
+          distpach(loggearme(user))
+          
+        })
+        .catch(error => {
+          setLoadingData(false)
+          if (error.code === 'auth/email-already-in-use') {
+            console.log('That email address is already in use!');
+            Alert.alert('El usuario ya esta en uso')
+          } else if (error.code === 'auth/invalid-email') {
+            console.log('That email address is invalid!');
+            Alert.alert('Email invalido')
+          } else {
+            Alert.alert('Problemas con el servidor')
+            console.error(error);
+          }
+          
+        });
     }
 
 
