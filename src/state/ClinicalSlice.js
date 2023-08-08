@@ -34,9 +34,20 @@ reducers: {
     };
     
     state.hc = newHC
+  },
+  hcClean: (state, action) => {
+    
+    let newHC = {
+        id:0,
+        idUser:0,
+        photo:null,
+        status:null
+    };
+    
+    state.hc = newHC
   }
   },
 })
 // Action creators are generated for each case reducer function
-export const { hcSuccess, hcFailure } = HCSlice.actions
+export const { hcSuccess, hcFailure, hcClean } = HCSlice.actions
 export default HCSlice.reducer;

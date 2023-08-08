@@ -43,8 +43,6 @@ const LoginScreen = ({ navigation }) => {
         auth()
         .signInWithEmailAndPassword(text, number)
         .then((resp) => {
-          console.log('Log in ', JSON.stringify(resp, null, 3));
-          console.log('id user ', resp.user.uid);
           const id = resp.user.uid
           const user = {
             id:id,

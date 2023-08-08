@@ -1,6 +1,7 @@
-import { View, Text, ImageBackground, Image, Alert } from 'react-native';
+import { View, Text, ImageBackground, Image  } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -9,15 +10,14 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Drawer } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 import { unlogger } from '../state/LoginSlice';
-import { Enviroment } from '../enviroment';
-import axios from 'axios';
-import { profileSuccess } from '../state/Profileslice';
-import firestore from '@react-native-firebase/firestore';
+import { ownState } from '../state/OwnSlice';
 
 
 const CustomDrawerAppStack = (props) => {
 
-  const state = useSelector(state => state)
+  const {name, lastName, avatar, status} = useSelector(state => state.profileuser.profile)
+  const distpach = useDispatch()
+  
 
   const [datos, setDatos] = useState({
     name: 'Sin datos',
@@ -25,27 +25,19 @@ const CustomDrawerAppStack = (props) => {
     avatar: '../assets/images/avatar.png'
   })
 
-  const [data, setData] = useState()
 
   useEffect(() => {
 
-    getFirebase()
-
-
-  }, [])
-
-  useEffect(() => {
-
-    state.profileuser.profile.status ? setDatos({
-      name: state.profileuser.profile.name,
-      lastName: state.profileuser.profile.lastName,
-      avatar: state.profileuser.profile.avatar,
+    status ? setDatos({
+      name: name,
+      lastName: lastName,
+      avatar: avatar,
     }) : null
 
-  }, [state.profileuser.profile.status])
+  }, [status])
 
 
-  const distpach = useDispatch();
+  
 
   let url = '../assets/images/portadapet.jpg';
 
@@ -65,34 +57,7 @@ const CustomDrawerAppStack = (props) => {
   }
 
 
-  const getFirebase = async ()=>{
-
-   
-  const suscriber = firestore()
-    .collection('ProfileUsers')
-    .where('idUser', '==', state.logger.user.id)
-    .onSnapshot(querySnapshot => {
-      const objeto = [];      
-      querySnapshot.forEach(documentSnapshot => {
-        objeto.push({
-          ...documentSnapshot.data(),
-          key: documentSnapshot.id
-        });
-      });
-      setData(objeto);
-      setDatos({
-        ...datos,
-        name:objeto[0].name,
-        lastName:objeto[0].lastName,
-        avatar:objeto[0].avatar,
-
-      })
-      console.log('data::::> ', JSON.stringify(objeto, null, 5));
-    });
-
-  return () => suscriber();
   
-  }
 
 
   return (
@@ -104,31 +69,18 @@ const CustomDrawerAppStack = (props) => {
           source={require(url)}
           style={{ padding: 30, }}>
           <View style={{ flex: 1, flexDirection: 'column' }}>
-            {/* <View style={{ width: '100%', height: '40%' }}></View> */}
             <View style={{ width: '100%', height: '10%' }}></View>
             <View style={{ width: '100%', height: '50%', flexDirection: 'row' }}>
               <View style={{width: '50%',height: '100%'}}>
                 <Image
                   source={{ uri: datos.avatar }}
-                  style={{
-                    height: 90,
-                    width: 90,
-                    resizeMode: 'cover',
-                    borderRadius: 40,
-                    marginBottom: 10,
-                  }}
-                />
+                  style={{height: 90,width: 90,resizeMode: 'cover',borderRadius: 40,
+                          marginBottom: 10,}}/>
               </View>
               <View style={{width: '50%',height: '100%'}}>
-                <Text
-                  style={{
-                    color: '#fff',
-                    fontSize: 22,
-                    fontFamily: 'Roboto-Medium',
-                    fontWeight: 'bold',
-                    alignSelf:'flex-end'
-                  }}>
-                  {datos.name} {datos.lastName}
+                <Text style={{color: '#fff',fontSize: 20, fontFamily: 'Roboto-Medium',
+                              fontWeight: 'bold',alignSelf:'flex-end'}}>
+                  {datos.name.toUpperCase()} {datos.lastName.toUpperCase()}
                 </Text>
               </View>
             </View>
@@ -153,6 +105,26 @@ const CustomDrawerAppStack = (props) => {
                   size={20}
                 />
               )} />
+              {
+              NestedHome == true &&
+              <DrawerItem
+                label='Home'
+                icon={() => (
+                  <FontAwesome
+                    name="home"
+                    color='#D35400'
+                    size={20}
+                    marginLeft={15}
+                  />
+                )}
+                labelStyle={{ color: '#D35400' }}
+                onPress={
+                  () => {
+                    props.navigation.navigate('Home')
+                    // Alert.alert('Funcionalidad en desarrollo')
+                  }}
+              />
+            }
             {
               NestedHome == true &&
               <DrawerItem
@@ -221,8 +193,8 @@ const CustomDrawerAppStack = (props) => {
                 labelStyle={{ color: '#D35400' }}
                 onPress={
                   () => {
-                    // props.navigation.navigate('Club') 
-                    Alert.alert('Funcionalidad en desarrollo')
+                    props.navigation.navigate('HC') 
+                    // Alert.alert('Funcionalidad en desarrollo')
                   }}
               />
             }
@@ -240,8 +212,8 @@ const CustomDrawerAppStack = (props) => {
                 labelStyle={{ color: '#D35400' }}
                 onPress={
                   () => {
-                    // props.navigation.navigate('Club') 
-                    Alert.alert('Funcionalidad en desarrollo')
+                    props.navigation.navigate('Address') 
+                    // Alert.alert('Funcionalidad en desarrollo')
                   }}
               />
             }
@@ -273,6 +245,11 @@ const CustomDrawerAppStack = (props) => {
                 labelStyle={{ color: '#D35400' }}
                 onPress={
                   () => {
+                    const own = {
+                      idUser: state.logger.user.id,
+                      object:'vehiculo'
+                    }
+                    distpach(ownState(own))
                     props.navigation.navigate('Own')
                     // Alert.alert('Funcionalidad en desarrollo')
                   }}
@@ -292,8 +269,13 @@ const CustomDrawerAppStack = (props) => {
                 labelStyle={{ color: '#D35400' }}
                 onPress={
                   () => {
-                    // props.navigation.navigate('Club') 
-                    Alert.alert('Funcionalidad en desarrollo')
+                    const own = {
+                      idUser: state.logger.user.id,
+                      object:'motocicleta'
+                    }
+                    distpach(ownState(own))
+                    props.navigation.navigate('Own')
+                    // Alert.alert('Funcionalidad en desarrollo')
                   }}
               />
             }
@@ -311,8 +293,37 @@ const CustomDrawerAppStack = (props) => {
                 labelStyle={{ color: '#D35400' }}
                 onPress={
                   () => {
-                    // props.navigation.navigate('Club') 
-                    Alert.alert('Funcionalidad en desarrollo')
+                    const own = {
+                      idUser: state.logger.user.id,
+                      object:'bicicleta'
+                    }
+                    distpach(ownState(own))
+                    props.navigation.navigate('Own')
+                    // Alert.alert('Funcionalidad en desarrollo')
+                  }}
+              />
+            }
+            {
+              NestedOwn == true &&
+              <DrawerItem
+                label='Mi laptop'
+                icon={() => (
+                  <FontAwesome5
+                    name="laptop-code"
+                    color='#D35400'
+                    size={20}
+                  />
+                )}
+                labelStyle={{ color: '#D35400' }}
+                onPress={
+                  () => {
+                    const own = {
+                      idUser: state.logger.user.id,
+                      object:'laptop'
+                    }
+                    distpach(ownState(own))
+                    props.navigation.navigate('Own')
+                    // Alert.alert('Funcionalidad en desarrollo')
                   }}
               />
             }

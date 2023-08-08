@@ -37,9 +37,21 @@ reducers: {
     };
     
     state.pet = newPet
+  }, 
+  petClean: (state, action) => {
+    
+    let newPet = {
+        id:0,
+        idUser:0,
+        pickname:null,
+        photo:null,
+        status:null
+    };
+    
+    state.pet = newPet
   }
   },
 })
 // Action creators are generated for each case reducer function
-export const { petSuccess, petFailure } = PetSlice.actions
+export const { petSuccess, petFailure, petClean } = PetSlice.actions
 export default PetSlice.reducer;

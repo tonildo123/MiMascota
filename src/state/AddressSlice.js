@@ -58,9 +58,28 @@ reducers: {
       };
       
       state.address = newAddress
+  },
+  addressClean: (state, action) => {
+    
+    let newAddress = {
+        id:0,
+        idUser:0,
+        street:null,
+        number:null,
+        department:null,
+        floor:null,
+        locality:null,
+        province:null,
+        country:null,
+        latitude:null,
+        longitude:null,
+        success : null
+      };
+      
+      state.address = newAddress
   }
   },
 })
 // Action creators are generated for each case reducer function
-export const { addressSuccess, addressFailure } = AddressSlice.actions
+export const { addressSuccess, addressFailure, addressClean } = AddressSlice.actions
 export default AddressSlice.reducer;

@@ -1,35 +1,40 @@
 
-import React, { useState, useEffect } from 'react'
-import { Button, TextInput, View, Image,StyleSheet, PermissionsAndroid, Alert} from 'react-native';
+import React, { useEffect } from 'react'
+import { Button, TextInput, View, Image, Alert} from 'react-native';
 import { Formik } from 'formik';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import HeaderComponent from '../../components/HeaderComponent'
-import   {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Image200X200 from '../../components/Imgen';
 import firestore from '@react-native-firebase/firestore';
+import { profileClean, profileSuccess } from '../../state/Profileslice';
+import usePhotos from '../../hooks/usePhotos';
+import { StyleProfile } from './style';
+
 
 
 const ProfileScreen = () => {
 
-  const initValues = { name:'', lastName:'', numberPhone:''}
-  let state = useSelector((state) => state)  
+ 
+  let {name, lastName, avatar, numberPhone, status} = useSelector((state) => state.profileuser.profile)  
+  let {id} = useSelector((state) => state.logger.user)  
+  const distpach = useDispatch()
   
-  const [fotobase64, setFotobase64] = useState();
-  const [mensaje, setmensaje] = useState()
-  const [loading, setLoading] = useState(false)
+  const {mensaje, fotobase64, handleFoto, handleImagen} = usePhotos()
 
+  const initValues = { 
+    name:name ?? '',
+    lastName:lastName ?? '', 
+    numberPhone:numberPhone ??''}
 
   useEffect(() => {
-    console.log('profile : ',JSON.stringify(state, null, 5))
     mensaje == undefined ? null : Alert.alert(`${mensaje}`)
-  }, [])
-  
+  }, [])  
 
   const handleSubmit =  async (values) => {
     
     try {
       firestore().collection('ProfileUsers').add({
-        idUser:state.logger.user.id,
+        idUser:id,
         name:values.name,
         lastName:values.lastName,
         avatar :fotobase64,
@@ -38,115 +43,62 @@ const ProfileScreen = () => {
     } catch (error) {
       console.log(error)
       Alert.alert('ocurrio un error')
-    }finally{
-      Alert.alert('cargado correctamente!')
-      
+    }finally{      
+      const profile = {
+        idUser:id,
+        name:values.name,
+        lastName:values.lastName,
+        avatar :fotobase64,
+        numberPhone:values.numberPhone,
+      }
+      distpach(profileSuccess(profile))
+      Alert.alert('Cargado correctamente!')
     }    
 
 }
- 
-  
-const handleFoto = async () => {
+
+
+const handleUpdate =async (values) =>{
+
   try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.CAMERA,
-      {
-        title: 'Permiso de cámara',
-        message: 'Necesitamos permiso para acceder a la cámara',
-        buttonNeutral: 'Preguntar después',
-        buttonNegative: 'Cancelar',
-        buttonPositive: 'Aceptar',
-      },
-    );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      const options = {
-        title: 'Tomar una foto',
-        storageOption: {
-          skipBackup: true,
-          path: 'images',
-        },
-        includeBase64: true,
-      };
-      launchCamera(options, response => {
-        console.log('response = ', response);
-        setmensaje('error inesperado');
-        if (response.errorCode) {
-          console.log('response error= ', response.errorCode);
-          setmensaje('error inesperado');
-        } else if (response.didCancel) {
-          console.log('user cancel action ');
-          setmensaje('error inesperado');
-        } else {
-          const uri = response.assets[0].uri;
-          setFotobase64(uri);
-        }
-      });
-    } else {
-      console.log('Permiso de cámara denegado');
-      setmensaje('Permiso de cámara denegado');
+    firestore().collection('ProfileUsers').doc(id).update({
+      idUser:id,
+      name:values.name,
+      lastName:values.lastName,
+      avatar :fotobase64,
+      numberPhone:values.numberPhone,
+    })
+  } catch (error) {
+    console.log(error)
+    Alert.alert('Error al actualizar!')
+  }finally{
+    distpach(profileClean())
+    const profile = {
+      idUser:id,
+      name:values.name,
+      lastName:values.lastName,
+      avatar :fotobase64,
+      numberPhone:values.numberPhone,
     }
-  } catch (err) {
-    console.warn(err);
-    setmensaje('error inesperado');
+    distpach(profileSuccess(profile))
+    Alert.alert('Actualizado correctamente!')
+
   }
-};
-// selecciona una imagen
-const handleImagen = () =>{
 
-  const options = {
-    title:'Seleccione una imagen',
-    storageOption:{
-      skipBackup:true,
-      path:'images',
-    },
-  };
-
-  launchImageLibrary(options, response =>{
-    console.log('response = ' + response);
-
-      if(response.errorCode){
-        console.log('response error= '+response.errorCode);
-      }else if(response.didCancel){
-        console.log('user cancel action ');
-      }else{
-        const path = response.assets[0].uri;
-        setFotobase64(path);
-        
-      }
-
-  });
-
-
-};
+}
 
   return (
-    <View style={{flex:1}}>
+    <View style={StyleProfile.container}>
       <HeaderComponent />
       <View style={{flex:1}}>      
-      <Formik
-        initialValues={initValues}
-        onSubmit={(values) => handleSubmit(values)}
-      >
-     {({ handleChange, handleBlur, handleSubmit, values }) => (
-       <View>
-
-        {
-          fotobase64 === undefined ? <Image200X200/> : 
-          <Image
-                source={{
-                  uri: fotobase64,
-                }}
-                style={{
-                  height: 200,
-                  width: 200,
-                  resizeMode: 'cover',
-                  alignSelf: 'center'
-                }}
-              />
+      <Formik initialValues={initValues} onSubmit={(values) => handleSubmit(values)}>
+        {({ handleChange, handleBlur, handleSubmit, values }) => (
+        <View>
+        { !status || status === null ? <Image200X200/> : 
+          <Image source={{ uri: avatar}} style={StyleProfile.image}/>
         }
         
-          <View style={{flexDirection:'row' ,justifyContent:'space-evenly', marginTop:8
-          }}>
+          <View style={StyleProfile.handlefotos}>
           <Button onPress={handleFoto} title='Tomar foto' color={'#873600'}/>
           <Button onPress={handleImagen} title='Elegir foto' color={'#873600'} />
           </View>
@@ -175,7 +127,7 @@ const handleImagen = () =>{
            value={values.numberPhone}
            color={'black'}
          />          
-          <Button onPress={handleSubmit} title='Guardar cambios' color={'#873600'}/>
+          <Button onPress={status ? handleUpdate : handleSubmit} title='Guardar cambios' color={'#873600'}/>
        </View>
      )}
    </Formik>
@@ -188,4 +140,3 @@ const handleImagen = () =>{
 
 export default ProfileScreen
 
-const styles = StyleSheet.create({})

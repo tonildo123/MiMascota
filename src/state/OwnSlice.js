@@ -37,9 +37,33 @@ reducers: {
     };
     
     state.own = newOwn
+  },
+  ownClean: (state, action) => {
+    
+    let newOwn = {
+        id:0,
+        idUser:0,
+        object:null,
+        photo:null,
+        status:null
+    };
+    
+    state.own = newOwn
+  },
+  ownState: (state, action) => {
+    
+    let newOwn = {
+        id:0,
+        idUser:action.payload.idUser,
+        object:action.payload.object,
+        photo:null,
+        status:null
+    };
+    
+    state.own = newOwn
   }
   },
 })
 // Action creators are generated for each case reducer function
-export const { ownSuccess, ownFailure } = OwnSlice.actions
+export const { ownSuccess, ownFailure, ownClean,ownState } = OwnSlice.actions
 export default OwnSlice.reducer;

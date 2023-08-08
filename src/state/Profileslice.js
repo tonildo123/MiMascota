@@ -43,9 +43,23 @@ reducers: {
     };
     
     state.profile = newProfile
+  },
+  profileClean: (state, action) => {
+    
+    let newProfile = {
+        id:0,
+        idUser:0,
+        name:null,
+        lastName:null,
+        avatar :null,
+        numberPhone:null,
+        status:null
+    };
+    
+    state.profile = newProfile
   }
   },
 })
 // Action creators are generated for each case reducer function
-export const { profileSuccess, profileFailure } = ProfileSlice.actions
+export const { profileSuccess, profileFailure, profileClean } = ProfileSlice.actions
 export default ProfileSlice.reducer;
